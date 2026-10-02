@@ -3,8 +3,22 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
-// Load environment variables from .env file if available
-dotenv.config();
+import { fileURLToPath } from "node:url";
+
+// Load environment variables from project directory .env, ~/.env, or process.cwd() .env
+const currentDir = path.dirname(fileURLToPath(import.meta.url));
+const projectRootDir = path.resolve(currentDir, "..");
+const projectEnv = path.join(projectRootDir, ".env");
+const homeEnv = path.join(os.homedir(), ".env");
+
+if (fs.existsSync(projectEnv)) {
+  dotenv.config({ path: projectEnv });
+}
+if (fs.existsSync(homeEnv)) {
+  dotenv.config({ path: homeEnv });
+}
+dotenv.config(); // fallback to cwd
+
 
 export interface ServerConfig {
   githubToken: string | undefined;
