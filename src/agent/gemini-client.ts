@@ -307,16 +307,40 @@ You have direct access to tools for inspecting local Antigravity project workspa
 When a user asks about local projects or GitHub tasks, proactively call the appropriate tools.
 Summarize your actions clearly and format responses with clean markdown.`;
 
+  const modelsToTry = [model, "gemini-3.5-flash-lite", "gemini-2.5-flash"].filter(
+    (m, idx, self) => self.indexOf(m) === idx
+  );
+
   // Autonomous tool loop (up to 8 turns)
   for (let turn = 0; turn < 8; turn++) {
-    const response = await ai.models.generateContent({
-      model,
-      contents,
-      config: {
-        systemInstruction,
-        tools: [{ functionDeclarations: GEMINI_TOOL_DECLARATIONS }],
-      },
-    });
+    let response: any = null;
+    let lastError: any = null;
+
+    for (const targetModel of modelsToTry) {
+      try {
+        response = await ai.models.generateContent({
+          model: targetModel,
+          contents,
+          config: {
+            systemInstruction,
+            tools: [{ functionDeclarations: GEMINI_TOOL_DECLARATIONS }],
+          },
+        });
+        break; // Succeeded!
+      } catch (err: any) {
+        lastError = err;
+        const errMsg = String(err.message || "");
+        if (errMsg.includes("503") || errMsg.includes("high demand") || errMsg.includes("UNAVAILABLE")) {
+          console.warn(`Model ${targetModel} busy (503), trying next model...`);
+          continue;
+        }
+        throw err;
+      }
+    }
+
+    if (!response) {
+      throw lastError || new Error("Failed to get response from Gemini models.");
+    }
 
     const functionCalls = response.functionCalls;
 
@@ -351,6 +375,7 @@ Summarize your actions clearly and format responses with clean markdown.`;
 
         functionResponseParts.push({
           functionResponse: {
+            id: call.id,
             name: toolName,
             response: { result },
           },
@@ -364,6 +389,7 @@ Summarize your actions clearly and format responses with clean markdown.`;
 
         functionResponseParts.push({
           functionResponse: {
+            id: call.id,
             name: toolName,
             response: { error: err.message },
           },
