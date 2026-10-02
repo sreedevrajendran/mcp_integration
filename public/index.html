@@ -2,501 +2,998 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Gemini Agent • Antigravity & GitHub</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Gemini</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <style>
     :root {
-      --bg: #0d1117;
-      --card-bg: #161b22;
-      --border: #30363d;
-      --accent: #58a6ff;
-      --accent-hover: #1f6feb;
-      --text: #c9d1d9;
-      --text-muted: #8b949e;
-      --user-bubble: #1f6feb;
-      --tool-bg: #21262d;
-      --tool-border: #388bfd33;
-      --success: #3fb950;
-      --warning: #d29922;
-      --danger: #f85149;
+      --gemini-bg: #131314;
+      --gemini-surface: #1e1f20;
+      --gemini-surface-variant: #282a2c;
+      --gemini-surface-hover: #333538;
+      --gemini-border: #3c4043;
+      --gemini-border-light: rgba(255, 255, 255, 0.1);
+      --gemini-text-primary: #e3e3e3;
+      --gemini-text-secondary: #c4c7c5;
+      --gemini-text-muted: #8e918f;
+      --gemini-blue: #4487f4;
+      --gemini-blue-hover: #5b96f7;
+      --gemini-sparkle-blue: #4285f4;
+      --gemini-sparkle-purple: #9b72cb;
+      --gemini-sparkle-red: #d96570;
+      --gemini-card-bg: #1e1f20;
+      --gemini-card-hover: #2d2f31;
     }
+
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      -webkit-tap-highlight-color: transparent;
     }
+
     body {
-      background-color: var(--bg);
-      color: var(--text);
-      display: flex;
-      flex-direction: column;
+      background-color: var(--gemini-bg);
+      color: var(--gemini-text-primary);
       height: 100vh;
       height: 100dvh;
+      display: flex;
       overflow: hidden;
     }
-    /* Header */
-    header {
-      background: var(--card-bg);
-      border-bottom: 1px solid var(--border);
+
+    /* SVG Icon Helpers */
+    .icon {
+      width: 20px;
+      height: 20px;
+      fill: currentColor;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+
+    /* Sidebar Drawer */
+    #sidebar {
+      width: 280px;
+      background-color: var(--gemini-surface);
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid var(--gemini-border-light);
+      transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), width 0.25s ease;
+      z-index: 100;
+      flex-shrink: 0;
+    }
+
+    #sidebar.collapsed {
+      width: 0;
+      transform: translateX(-100%);
+    }
+
+    .sidebar-header {
+      padding: 18px 16px 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .new-chat-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--gemini-surface-variant);
+      color: var(--gemini-text-primary);
+      border: 1px solid var(--gemini-border-light);
+      padding: 10px 18px;
+      border-radius: 24px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      width: 100%;
+      transition: background 0.2s;
+    }
+
+    .new-chat-btn:hover {
+      background: var(--gemini-surface-hover);
+    }
+
+    .sidebar-section-title {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--gemini-text-muted);
+      padding: 16px 16px 6px;
+      font-weight: 600;
+    }
+
+    .sidebar-history {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 8px;
+    }
+
+    .history-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 20px;
+      font-size: 0.88rem;
+      color: var(--gemini-text-secondary);
+      cursor: pointer;
+      text-decoration: none;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: background 0.15s;
+    }
+
+    .history-item:hover {
+      background: var(--gemini-surface-hover);
+      color: #fff;
+    }
+
+    .sidebar-footer {
       padding: 12px 16px;
+      border-top: 1px solid var(--gemini-border-light);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .footer-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 10px;
+      border-radius: 12px;
+      color: var(--gemini-text-secondary);
+      font-size: 0.85rem;
+      cursor: pointer;
+      background: transparent;
+      border: none;
+      text-align: left;
+    }
+
+    .footer-item:hover {
+      background: var(--gemini-surface-hover);
+    }
+
+    /* Main Content Area */
+    #main-app {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      height: 100%;
+      min-width: 0;
+    }
+
+    /* Top Navigation Bar */
+    header {
+      padding: 12px 20px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       flex-shrink: 0;
+      background: var(--gemini-bg);
+      z-index: 10;
     }
-    .brand {
+
+    .nav-left {
       display: flex;
       align-items: center;
-      gap: 10px;
-      font-weight: 600;
-      font-size: 1.05rem;
+      gap: 12px;
+    }
+
+    .icon-btn {
+      background: transparent;
+      border: none;
+      color: var(--gemini-text-secondary);
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .icon-btn:hover {
+      background: var(--gemini-surface-variant);
       color: #fff;
     }
-    .brand-icon {
-      font-size: 1.4rem;
-    }
-    .status-badges {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .badge {
-      font-size: 0.75rem;
-      padding: 4px 8px;
-      border-radius: 12px;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      background: #21262d;
-      border: 1px solid var(--border);
-      color: var(--text-muted);
-    }
-    .badge.active {
-      color: var(--success);
-      border-color: rgba(63, 185, 80, 0.4);
-    }
-    .badge.inactive {
-      color: var(--warning);
-      border-color: rgba(210, 153, 34, 0.4);
-      cursor: pointer;
-    }
-    .settings-btn {
-      background: #21262d;
-      border: 1px solid var(--border);
-      color: var(--text);
-      padding: 6px 10px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 0.85rem;
+
+    .gemini-title-badge {
       display: flex;
       align-items: center;
       gap: 6px;
-    }
-    .settings-btn:hover {
-      background: #30363d;
+      font-size: 1.15rem;
+      font-weight: 500;
+      color: #fff;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 8px;
     }
 
-    /* Main Chat Container */
-    #chat-container {
+    .gemini-title-badge:hover {
+      background: var(--gemini-surface-variant);
+    }
+
+    .model-pill {
+      font-size: 0.75rem;
+      color: var(--gemini-text-muted);
+      margin-left: 2px;
+      font-weight: 400;
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .status-chip {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.78rem;
+      padding: 5px 10px;
+      border-radius: 16px;
+      background: var(--gemini-surface);
+      border: 1px solid var(--gemini-border-light);
+      color: var(--gemini-text-secondary);
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+    }
+
+    .status-dot.active { background: #34a853; box-shadow: 0 0 6px #34a853; }
+    .status-dot.warn { background: #fbbc04; }
+
+    .user-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #7c4dff, #4487f4);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+
+    /* Chat Scroll Area */
+    #chat-scroll {
       flex: 1;
       overflow-y: auto;
+      padding: 0 16px;
+      display: flex;
+      flex-direction: column;
+      scroll-behavior: smooth;
+    }
+
+    .chat-inner {
+      max-width: 820px;
+      width: 100%;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      padding-top: 10px;
+      padding-bottom: 30px;
+    }
+
+    /* Welcome / Empty State (Identical to Google Gemini) */
+    #empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      min-height: 60vh;
+      padding: 20px 0;
+    }
+
+    .gemini-greeting {
+      font-size: 3.2rem;
+      font-weight: 500;
+      line-height: 1.15;
+      letter-spacing: -0.5px;
+      margin-bottom: 8px;
+      background: linear-gradient(90deg, #4285f4 0%, #9b72cb 35%, #d96570 70%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .gemini-subgreeting {
+      font-size: 3.2rem;
+      font-weight: 500;
+      line-height: 1.15;
+      letter-spacing: -0.5px;
+      color: #444746;
+      margin-bottom: 40px;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      width: 100%;
+    }
+
+    .prompt-card {
+      background: var(--gemini-card-bg);
+      border: 1px solid var(--gemini-border-light);
+      border-radius: 16px;
       padding: 16px;
       display: flex;
       flex-direction: column;
-      gap: 16px;
-      scroll-behavior: smooth;
+      justify-content: space-between;
+      min-height: 140px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
     }
-    .message-row {
+
+    .prompt-card:hover {
+      background: var(--gemini-card-hover);
+      transform: translateY(-2px);
+    }
+
+    .card-text {
+      font-size: 0.95rem;
+      color: var(--gemini-text-primary);
+      line-height: 1.4;
+      font-weight: 400;
+    }
+
+    .card-icon-wrapper {
+      align-self: flex-end;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--gemini-surface-variant);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--gemini-text-secondary);
+    }
+
+    /* Chat Messages */
+    .turn {
+      margin-bottom: 26px;
       display: flex;
       flex-direction: column;
-      max-width: 850px;
       width: 100%;
-      margin: 0 auto;
     }
-    .message {
-      padding: 12px 16px;
-      border-radius: 10px;
-      font-size: 0.95rem;
-      line-height: 1.55;
+
+    /* User Message */
+    .user-turn {
+      align-items: flex-end;
+    }
+
+    .user-pill {
+      background: var(--gemini-surface-variant);
+      color: #fff;
+      padding: 12px 18px;
+      border-radius: 24px;
+      font-size: 1rem;
+      line-height: 1.5;
+      max-width: 85%;
       word-break: break-word;
     }
-    .user-msg {
-      align-self: flex-end;
-      background: var(--user-bubble);
-      color: #fff;
-      border-bottom-right-radius: 2px;
-      max-width: 85%;
-    }
-    .assistant-msg {
-      align-self: flex-start;
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      color: var(--text);
-      border-bottom-left-radius: 2px;
+
+    /* Model Message (Gemini style) */
+    .model-turn {
+      align-items: flex-start;
+      display: flex;
+      gap: 14px;
       width: 100%;
     }
-    .assistant-msg pre {
-      background: #0d1117;
-      padding: 10px;
-      border-radius: 6px;
-      overflow-x: auto;
-      margin: 8px 0;
-      border: 1px solid var(--border);
-      font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, monospace;
-      font-size: 0.85rem;
+
+    .sparkle-avatar {
+      width: 32px;
+      height: 32px;
+      flex-shrink: 0;
+      margin-top: 4px;
     }
-    .assistant-msg code {
-      background: #21262d;
-      padding: 2px 5px;
-      border-radius: 4px;
+
+    .model-content {
+      flex: 1;
+      font-size: 1rem;
+      line-height: 1.7;
+      color: var(--gemini-text-primary);
+      min-width: 0;
+    }
+
+    .model-content p {
+      margin-bottom: 12px;
+    }
+
+    .model-content pre {
+      background: #18191a;
+      border: 1px solid var(--gemini-border-light);
+      border-radius: 12px;
+      padding: 14px 16px;
+      overflow-x: auto;
+      margin: 14px 0;
+      font-family: 'Roboto Mono', monospace;
       font-size: 0.88rem;
     }
-    .assistant-msg pre code {
+
+    .model-content code {
+      font-family: 'Roboto Mono', monospace;
+      background: rgba(255, 255, 255, 0.08);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.9em;
+    }
+
+    .model-content pre code {
       background: transparent;
       padding: 0;
     }
-    .assistant-msg ul, .assistant-msg ol {
-      padding-left: 20px;
-      margin: 8px 0;
-    }
-    .assistant-msg table {
-      border-collapse: collapse;
-      width: 100%;
-      margin: 10px 0;
-    }
-    .assistant-msg th, .assistant-msg td {
-      border: 1px solid var(--border);
-      padding: 6px 10px;
-      font-size: 0.88rem;
-    }
-    .assistant-msg th {
-      background: #21262d;
+
+    .model-content ul, .model-content ol {
+      padding-left: 22px;
+      margin-bottom: 12px;
     }
 
-    /* Tool Call Cards */
-    .tool-card {
-      background: var(--tool-bg);
-      border: 1px solid var(--tool-border);
-      border-radius: 6px;
-      margin: 8px 0;
-      overflow: hidden;
-      font-size: 0.85rem;
+    .model-content li {
+      margin-bottom: 6px;
     }
-    .tool-header {
+
+    .model-content table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 14px 0;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--gemini-border-light);
+    }
+
+    .model-content th, .model-content td {
       padding: 8px 12px;
+      border: 1px solid var(--gemini-border-light);
+      font-size: 0.9rem;
+    }
+
+    .model-content th {
+      background: var(--gemini-surface-variant);
+      font-weight: 500;
+    }
+
+    /* Collapsible Tool Call Cards (Gemini Thinking / Tools style) */
+    .tool-accordion {
+      background: var(--gemini-surface);
+      border: 1px solid var(--gemini-border-light);
+      border-radius: 12px;
+      margin-bottom: 14px;
+      overflow: hidden;
+      font-size: 0.88rem;
+    }
+
+    .tool-accordion-summary {
+      padding: 10px 14px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       cursor: pointer;
       user-select: none;
-      background: rgba(88, 166, 255, 0.08);
-      color: var(--accent);
+      color: var(--gemini-text-secondary);
       font-weight: 500;
+      gap: 8px;
     }
-    .tool-header:hover {
-      background: rgba(88, 166, 255, 0.15);
+
+    .tool-accordion-summary:hover {
+      background: var(--gemini-surface-hover);
     }
-    .tool-body {
-      padding: 10px;
-      border-top: 1px solid var(--border);
+
+    .tool-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tool-badge {
+      color: var(--gemini-blue);
+      font-family: 'Roboto Mono', monospace;
+      font-size: 0.82rem;
+    }
+
+    .tool-accordion-body {
       display: none;
-      background: #111418;
+      padding: 12px 14px;
+      background: #151617;
+      border-top: 1px solid var(--gemini-border-light);
     }
-    .tool-body.open {
+
+    .tool-accordion-body.open {
       display: block;
     }
 
-    /* Suggestion Chips */
-    .suggestions {
-      display: flex;
-      gap: 8px;
-      overflow-x: auto;
-      padding: 8px 16px;
-      max-width: 850px;
-      margin: 0 auto;
-      width: 100%;
-      scrollbar-width: none;
-    }
-    .suggestions::-webkit-scrollbar {
-      display: none;
-    }
-    .chip {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      color: var(--text-muted);
-      padding: 6px 12px;
-      border-radius: 16px;
-      font-size: 0.82rem;
-      white-space: nowrap;
-      cursor: pointer;
-      transition: all 0.15s ease;
-    }
-    .chip:hover {
-      background: #21262d;
-      color: var(--accent);
-      border-color: var(--accent);
+    .tool-section-label {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--gemini-text-muted);
+      margin-bottom: 6px;
     }
 
-    /* Input Footer */
-    footer {
-      background: var(--card-bg);
-      border-top: 1px solid var(--border);
-      padding: 12px 16px;
+    /* Thinking State animation */
+    .thinking-box {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--gemini-text-muted);
+      font-size: 0.95rem;
+    }
+
+    .shimmer-line {
+      height: 14px;
+      width: 140px;
+      border-radius: 6px;
+      background: linear-gradient(90deg, #2a2b2e 25%, #3d4044 50%, #2a2b2e 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite linear;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    /* Input Footer & Pill Box (Google Gemini's signature capsule) */
+    .input-wrapper {
+      padding: 0 16px 16px;
+      background: var(--gemini-bg);
       flex-shrink: 0;
     }
-    .input-form {
-      display: flex;
-      gap: 10px;
-      max-width: 850px;
+
+    .input-box-container {
+      max-width: 820px;
       margin: 0 auto;
-      position: relative;
+      background: var(--gemini-surface);
+      border: 1px solid var(--gemini-border-light);
+      border-radius: 28px;
+      padding: 10px 16px 8px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+      transition: border-color 0.2s, background 0.2s;
     }
-    #prompt-input {
-      flex: 1;
-      background: #0d1117;
-      border: 1px solid var(--border);
+
+    .input-box-container:focus-within {
+      border-color: var(--gemini-border);
+      background: var(--gemini-surface-variant);
+    }
+
+    #gemini-input {
+      background: transparent;
+      border: none;
       color: #fff;
-      padding: 12px 16px;
-      border-radius: 8px;
-      font-size: 0.95rem;
+      font-size: 1rem;
+      line-height: 1.5;
       outline: none;
       resize: none;
-      height: 48px;
-      max-height: 120px;
+      max-height: 150px;
+      min-height: 24px;
+      padding: 4px 0 8px;
+      width: 100%;
     }
-    #prompt-input:focus {
-      border-color: var(--accent);
+
+    #gemini-input::placeholder {
+      color: var(--gemini-text-muted);
     }
-    .send-btn {
-      background: var(--accent);
-      color: #fff;
+
+    .input-action-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 4px;
+    }
+
+    .input-action-left {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .action-icon-btn {
+      background: transparent;
       border: none;
-      width: 48px;
-      height: 48px;
-      border-radius: 8px;
-      cursor: pointer;
+      color: var(--gemini-text-secondary);
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.2rem;
-      transition: background 0.15s ease;
-      flex-shrink: 0;
-    }
-    .send-btn:hover {
-      background: var(--accent-hover);
-    }
-    .send-btn:disabled {
-      background: #21262d;
-      color: var(--text-muted);
-      cursor: not-allowed;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
     }
 
-    /* Modal */
+    .action-icon-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+    }
+
+    .send-circle-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: transparent;
+      border: none;
+      color: var(--gemini-text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .send-circle-btn.ready {
+      background: var(--gemini-blue);
+      color: #fff;
+    }
+
+    .send-circle-btn.ready:hover {
+      background: var(--gemini-blue-hover);
+    }
+
+    .input-disclaimer {
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--gemini-text-muted);
+      margin-top: 8px;
+    }
+
+    /* Settings Modal */
     .modal-overlay {
       position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.75);
+      inset: 0;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(4px);
       display: none;
       align-items: center;
       justify-content: center;
       z-index: 1000;
       padding: 16px;
     }
+
     .modal-overlay.open {
       display: flex;
     }
-    .modal {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      max-width: 500px;
+
+    .gemini-modal {
+      background: var(--gemini-surface);
+      border: 1px solid var(--gemini-border-light);
+      border-radius: 20px;
+      max-width: 480px;
       width: 100%;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
+      padding: 24px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
     }
-    .modal h3 {
+
+    .modal-title {
+      font-size: 1.25rem;
+      font-weight: 500;
       color: #fff;
-      font-size: 1.15rem;
-    }
-    .form-group {
+      margin-bottom: 8px;
       display: flex;
-      flex-direction: column;
-      gap: 6px;
+      align-items: center;
+      gap: 10px;
     }
-    .form-group label {
-      font-size: 0.85rem;
-      color: var(--text-muted);
+
+    .modal-desc {
+      font-size: 0.88rem;
+      color: var(--gemini-text-secondary);
+      line-height: 1.5;
+      margin-bottom: 20px;
     }
-    .form-group input {
-      background: #0d1117;
-      border: 1px solid var(--border);
+
+    .modal-field {
+      margin-bottom: 16px;
+    }
+
+    .modal-field label {
+      display: block;
+      font-size: 0.82rem;
+      color: var(--gemini-text-muted);
+      margin-bottom: 6px;
+    }
+
+    .modal-field input {
+      width: 100%;
+      background: var(--gemini-surface-variant);
+      border: 1px solid var(--gemini-border-light);
       color: #fff;
-      padding: 10px;
-      border-radius: 6px;
-      font-size: 0.9rem;
+      padding: 12px 14px;
+      border-radius: 12px;
+      font-size: 0.95rem;
       outline: none;
     }
-    .modal-actions {
+
+    .modal-field input:focus {
+      border-color: var(--gemini-blue);
+    }
+
+    .modal-footer {
       display: flex;
       justify-content: flex-end;
       gap: 10px;
+      margin-top: 24px;
     }
-    .btn-secondary {
-      background: #21262d;
-      border: 1px solid var(--border);
-      color: var(--text);
-      padding: 8px 14px;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    .btn-primary {
-      background: var(--accent);
+
+    .btn-text {
+      background: transparent;
       border: none;
-      color: #fff;
-      padding: 8px 14px;
-      border-radius: 6px;
+      color: var(--gemini-blue);
+      padding: 10px 16px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      border-radius: 20px;
       cursor: pointer;
     }
 
-    /* Loading Spinner */
-    .typing-indicator {
-      display: inline-flex;
-      gap: 4px;
-      align-items: center;
-      padding: 8px 12px;
+    .btn-filled {
+      background: var(--gemini-blue);
+      border: none;
+      color: #fff;
+      padding: 10px 20px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: background 0.15s;
     }
-    .dot {
-      width: 6px;
-      height: 6px;
-      background: var(--accent);
-      border-radius: 50%;
-      animation: bounce 1.4s infinite ease-in-out both;
+
+    .btn-filled:hover {
+      background: var(--gemini-blue-hover);
     }
-    .dot:nth-child(1) { animation-delay: -0.32s; }
-    .dot:nth-child(2) { animation-delay: -0.16s; }
-    @keyframes bounce {
-      0%, 80%, 100% { transform: scale(0); }
-      40% { transform: scale(1); }
+
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+      #sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+      }
+      .gemini-greeting, .gemini-subgreeting {
+        font-size: 2.2rem;
+      }
+      .cards-grid {
+        grid-template-columns: 1fr;
+      }
+      .prompt-card {
+        min-height: 80px;
+      }
     }
   </style>
 </head>
 <body>
 
-  <header>
-    <div class="brand">
-      <span class="brand-icon">⚡</span>
-      <span>Gemini Agent</span>
+  <!-- Left Sidebar Drawer -->
+  <aside id="sidebar">
+    <div class="sidebar-header">
+      <button class="new-chat-btn" onclick="startNewChat()">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+        <span>New chat</span>
+      </button>
     </div>
-    <div class="status-badges">
-      <span id="gemini-status" class="badge inactive" onclick="openSettingsModal()">● Gemini Key</span>
-      <span id="github-status" class="badge active">● GitHub Active</span>
-      <button class="settings-btn" onclick="openSettingsModal()">⚙️ Settings</button>
-    </div>
-  </header>
 
-  <div id="chat-container">
-    <div class="message-row">
-      <div class="message assistant-msg">
-        👋 **Welcome! I am your Gemini AI Agent.**
-        <br><br>
-        I have direct access to your local Antigravity project workspaces and your GitHub account:
-        <ul>
-          <li>📁 **Local Projects:** Inspect directory trees, read/write files, analyze configs, check TODOs & git status.</li>
-          <li>🐙 **GitHub:** Create repos, update settings, manage issues, open PRs, create branches, and commit files.</li>
-        </ul>
-        Ask me anything below or pick a prompt to start!
+    <div class="sidebar-section-title">Recent Workspaces</div>
+    <div class="sidebar-history" id="sidebar-projects-list">
+      <div class="history-item" onclick="promptWorkspace('AI_EXPENSE_TRACKER')">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
+        <span>AI_EXPENSE_TRACKER</span>
+      </div>
+      <div class="history-item" onclick="promptWorkspace('Creator_Intelligence_Platform')">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
+        <span>Creator_Intelligence_Platform</span>
+      </div>
+      <div class="history-item" onclick="promptWorkspace('Black_Pepper')">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
+        <span>Black_Pepper</span>
+      </div>
+      <div class="history-item" onclick="promptWorkspace('Used-Car-Price-Prediction')">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
+        <span>Used-Car-Price-Prediction</span>
       </div>
     </div>
-  </div>
 
-  <div class="suggestions">
-    <button class="chip" onclick="sendSuggestion('List all my local projects and tell me what frameworks they use.')">📁 List Local Projects</button>
-    <button class="chip" onclick="sendSuggestion('Show me my top 5 most recently updated repositories on GitHub.')">🐙 My GitHub Repos</button>
-    <button class="chip" onclick="sendSuggestion('Inspect local project AI_EXPENSE_TRACKER: show me its file tree and git status.')">📊 Inspect AI_EXPENSE_TRACKER</button>
-    <button class="chip" onclick="sendSuggestion('Create a new private GitHub repository named my-test-project.')">🚀 Create GitHub Repo</button>
-  </div>
+    <div class="sidebar-footer">
+      <button class="footer-item" onclick="openSettingsModal()">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+        <span>Settings</span>
+      </button>
+    </div>
+  </aside>
 
-  <footer>
-    <form class="input-form" onsubmit="handleSubmit(event)">
-      <textarea
-        id="prompt-input"
-        placeholder="Ask Gemini to inspect a local project, create a repo, manage issues..."
-        rows="1"
-        onkeydown="handleKeyDown(event)"
-      ></textarea>
-      <button type="submit" id="send-btn" class="send-btn">➔</button>
-    </form>
-  </footer>
+  <!-- Main View -->
+  <main id="main-app">
+    <!-- Top Header -->
+    <header>
+      <div class="nav-left">
+        <button class="icon-btn" onclick="toggleSidebar()" title="Toggle menu">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+        </button>
+        <div class="gemini-title-badge">
+          <span>Gemini</span>
+          <span class="model-pill">3.8 Flash ▾</span>
+        </div>
+      </div>
 
-  <!-- Settings Modal -->
+      <div class="nav-right">
+        <div class="status-chip" id="gemini-chip" onclick="openSettingsModal()" style="cursor:pointer;">
+          <span class="status-dot warn" id="gemini-dot"></span>
+          <span id="gemini-chip-text">Gemini Key</span>
+        </div>
+        <div class="status-chip" id="github-chip">
+          <span class="status-dot active"></span>
+          <span>GitHub</span>
+        </div>
+        <div class="user-avatar" onclick="openSettingsModal()" title="Account & Settings">S</div>
+      </div>
+    </header>
+
+    <!-- Chat Message Container -->
+    <div id="chat-scroll">
+      <div class="chat-inner" id="chat-inner">
+
+        <!-- Initial Google Gemini Empty State -->
+        <div id="empty-state">
+          <div class="gemini-greeting">Hello, Sreedev</div>
+          <div class="gemini-subgreeting">How can I help with your projects today?</div>
+
+          <div class="cards-grid">
+            <div class="prompt-card" onclick="sendPrompt('List all my local projects and tell me what frameworks and tech stacks they use.')">
+              <span class="card-text">Explore all 21 local projects in my workspace</span>
+              <div class="card-icon-wrapper">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
+              </div>
+            </div>
+
+            <div class="prompt-card" onclick="sendPrompt('Inspect my local project AI_EXPENSE_TRACKER. Give me its file tree and local git status.')">
+              <span class="card-text">Inspect architecture & git state of AI_EXPENSE_TRACKER</span>
+              <div class="card-icon-wrapper">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+              </div>
+            </div>
+
+            <div class="prompt-card" onclick="sendPrompt('Show me my latest updated repositories on GitHub and recent commit activity.')">
+              <span class="card-text">View my GitHub repositories and recent commits</span>
+              <div class="card-icon-wrapper">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2z"/></svg>
+              </div>
+            </div>
+
+            <div class="prompt-card" onclick="sendPrompt('Create a new private GitHub repository named my-new-portfolio and tell me how to link it.')">
+              <span class="card-text">Create a new private GitHub repo for a project</span>
+              <div class="card-icon-wrapper">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chat Turn Items appended dynamically -->
+      </div>
+    </div>
+
+    <!-- Google Gemini Input Capsule -->
+    <div class="input-wrapper">
+      <div class="input-box-container">
+        <textarea
+          id="gemini-input"
+          placeholder="Ask Gemini"
+          rows="1"
+          onkeydown="handleKeyDown(event)"
+          oninput="handleInput(event)"
+        ></textarea>
+
+        <div class="input-action-bar">
+          <div class="input-action-left">
+            <button class="action-icon-btn" onclick="openSettingsModal()" title="Tools & Settings">
+              <svg class="icon" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+            </button>
+            <button class="action-icon-btn" onclick="sendPrompt('List all my local projects')" title="Local Projects">
+              <svg class="icon" viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
+            </button>
+            <button class="action-icon-btn" onclick="sendPrompt('Show my GitHub repositories')" title="GitHub Repos">
+              <svg class="icon" viewBox="0 0 24 24"><path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2z"/></svg>
+            </button>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:8px;">
+            <button class="send-circle-btn" id="send-btn" onclick="submitMessage()" title="Submit">
+              <svg class="icon" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="input-disclaimer">Gemini may display inaccurate info, including about people, so double-check its responses.</div>
+    </div>
+  </main>
+
+  <!-- Google Material Style Settings Modal -->
   <div id="settings-modal" class="modal-overlay">
-    <div class="modal">
-      <h3>⚙️ Agent Settings</h3>
-      <p style="font-size:0.85rem; color:var(--text-muted);">
-        Enter your Google Gemini API key to enable autonomous AI agent execution. (Free from <a href="https://aistudio.google.com/apikey" target="_blank" style="color:var(--accent);">Google AI Studio</a>).
+    <div class="gemini-modal">
+      <div class="modal-title">
+        <svg style="width:24px; height:24px;" viewBox="0 0 24 24">
+          <path fill="url(#sparkle-gradient)" d="M12 2L14.2 9.8L22 12L14.2 14.2L12 22L9.8 14.2L2 12L9.8 9.8L12 2Z"/>
+          <defs>
+            <linearGradient id="sparkle-gradient" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#4285F4"/>
+              <stop offset="0.5" stop-color="#9B72CB"/>
+              <stop offset="1" stop-color="#D96570"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <span>Gemini Settings</span>
+      </div>
+      <p class="modal-desc">
+        Connect your Gemini API Key from <a href="https://aistudio.google.com/apikey" target="_blank" style="color:var(--gemini-blue); text-decoration:none;">Google AI Studio</a> to activate model reasoning and autonomous local workspace tools.
       </p>
 
-      <div class="form-group">
-        <label for="gemini-key-input">Gemini API Key (AI Studio)</label>
-        <input type="password" id="gemini-key-input" placeholder="AIzaSy...">
+      <div class="modal-field">
+        <label>Google Gemini API Key</label>
+        <input type="password" id="gemini-api-input" placeholder="AIzaSy...">
       </div>
 
-      <div class="form-group">
-        <label for="github-token-input">GitHub Personal Access Token (Optional override)</label>
+      <div class="modal-field">
+        <label>GitHub Personal Access Token</label>
         <input type="password" id="github-token-input" placeholder="github_pat_...">
       </div>
 
-      <div class="modal-actions">
-        <button class="btn-secondary" onclick="closeSettingsModal()">Cancel</button>
-        <button class="btn-primary" onclick="saveSettings()">Save & Connect</button>
+      <div class="modal-footer">
+        <button class="btn-text" onclick="closeSettingsModal()">Cancel</button>
+        <button class="btn-filled" onclick="saveSettings()">Save & Connect</button>
       </div>
     </div>
   </div>
 
   <script>
-    const chatContainer = document.getElementById("chat-container");
-    const promptInput = document.getElementById("prompt-input");
+    const chatScroll = document.getElementById("chat-scroll");
+    const chatInner = document.getElementById("chat-inner");
+    const emptyState = document.getElementById("empty-state");
+    const inputEl = document.getElementById("gemini-input");
     const sendBtn = document.getElementById("send-btn");
+    const sidebar = document.getElementById("sidebar");
     const settingsModal = document.getElementById("settings-modal");
-    const geminiStatusBadge = document.getElementById("gemini-status");
-    const githubStatusBadge = document.getElementById("github-status");
+    const geminiDot = document.getElementById("gemini-dot");
+    const geminiChipText = document.getElementById("gemini-chip-text");
 
-    let conversationHistory = [];
+    let history = [];
+    let isSubmitting = false;
 
-    // Check system status on page load
+    // Check system status on load
     async function checkStatus() {
       try {
         const res = await fetch("/api/status");
         const data = await res.json();
-
         if (data.hasGeminiKey) {
-          geminiStatusBadge.textContent = "● Gemini Ready";
-          geminiStatusBadge.className = "badge active";
+          geminiDot.className = "status-dot active";
+          geminiChipText.textContent = "Gemini Ready";
         } else {
-          geminiStatusBadge.textContent = "● Set Gemini Key";
-          geminiStatusBadge.className = "badge inactive";
+          geminiDot.className = "status-dot warn";
+          geminiChipText.textContent = "Set Gemini Key";
         }
-
-        if (data.hasGitHubToken) {
-          githubStatusBadge.textContent = "● GitHub Active";
-          githubStatusBadge.className = "badge active";
-        } else {
-          githubStatusBadge.textContent = "● Set GitHub Token";
-          githubStatusBadge.className = "badge inactive";
-        }
-      } catch (e) {
-        console.error("Status check failed", e);
+      } catch (err) {
+        console.error("Status check error", err);
       }
     }
-
     checkStatus();
+
+    function toggleSidebar() {
+      sidebar.classList.toggle("collapsed");
+    }
 
     function openSettingsModal() {
       settingsModal.classList.add("open");
@@ -507,7 +1004,7 @@
     }
 
     async function saveSettings() {
-      const geminiApiKey = document.getElementById("gemini-key-input").value.trim();
+      const geminiApiKey = document.getElementById("gemini-api-input").value.trim();
       const githubToken = document.getElementById("github-token-input").value.trim();
 
       const payload = {};
@@ -525,38 +1022,65 @@
           closeSettingsModal();
           checkStatus();
         } else {
-          alert("Error saving settings: " + (data.error || "Unknown"));
+          alert("Error: " + data.error);
         }
-      } catch (err) {
-        alert("Failed to save settings: " + err.message);
+      } catch (e) {
+        alert("Failed to save: " + e.message);
+      }
+    }
+
+    function startNewChat() {
+      history = [];
+      const turns = document.querySelectorAll(".turn");
+      turns.forEach(t => t.remove());
+      emptyState.style.display = "flex";
+      inputEl.value = "";
+      sendBtn.classList.remove("ready");
+    }
+
+    function promptWorkspace(name) {
+      sendPrompt(`Inspect project ${name} in my workspace and report its tech stack, file tree, and git status.`);
+    }
+
+    function sendPrompt(text) {
+      inputEl.value = text;
+      handleInput();
+      submitMessage();
+    }
+
+    function handleInput() {
+      inputEl.style.height = "auto";
+      inputEl.style.height = Math.min(inputEl.scrollHeight, 150) + "px";
+
+      if (inputEl.value.trim().length > 0) {
+        sendBtn.classList.add("ready");
+      } else {
+        sendBtn.classList.remove("ready");
       }
     }
 
     function handleKeyDown(e) {
       if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
-        handleSubmit(e);
+        submitMessage();
       }
     }
 
-    function sendSuggestion(text) {
-      promptInput.value = text;
-      handleSubmit(new Event("submit"));
-    }
+    async function submitMessage() {
+      const text = inputEl.value.trim();
+      if (!text || isSubmitting) return;
 
-    async function handleSubmit(e) {
-      e.preventDefault();
-      const text = promptInput.value.trim();
-      if (!text) return;
+      isSubmitting = true;
+      inputEl.value = "";
+      inputEl.style.height = "24px";
+      sendBtn.classList.remove("ready");
+      emptyState.style.display = "none";
 
-      promptInput.value = "";
-      sendBtn.disabled = true;
+      // Render User Message
+      appendUserMessage(text);
 
-      // Add user message
-      appendMessage("user", text);
-
-      // Add typing indicator
-      const typingId = appendTypingIndicator();
+      // Render Thinking Indicator
+      const thinkingEl = appendThinkingIndicator();
 
       try {
         const res = await fetch("/api/chat", {
@@ -564,125 +1088,149 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             message: text,
-            history: conversationHistory,
+            history: history,
           }),
         });
 
         const data = await res.json();
-        removeTypingIndicator(typingId);
+        thinkingEl.remove();
 
         if (data.error === "MISSING_GEMINI_API_KEY") {
-          appendMessage("assistant", "⚠️ **Gemini API Key Required**\nPlease click **Settings** (or the red badge at top right) and enter your free Gemini API Key from [Google AI Studio](https://aistudio.google.com/apikey).");
+          appendModelResponse(
+            "⚠️ **Gemini API Key Required**\nPlease click the **Gemini Key** button at top right or Settings to connect your free key from [Google AI Studio](https://aistudio.google.com/apikey).",
+            []
+          );
           openSettingsModal();
           return;
         }
 
         if (!data.success) {
-          appendMessage("assistant", `❌ **Error:** ${data.error || "Failed to process request."}`);
+          appendModelResponse(`❌ **Error:** ${data.error || "Failed to process request."}`, []);
           return;
         }
 
-        // Render tool calls if any were made
-        appendAssistantResponse(data.text, data.toolCalls);
+        appendModelResponse(data.text, data.toolCalls);
 
-        // Update history
-        conversationHistory.push({ role: "user", parts: [{ text }] });
-        conversationHistory.push({ role: "model", parts: [{ text: data.text }] });
+        history.push({ role: "user", parts: [{ text }] });
+        history.push({ role: "model", parts: [{ text: data.text }] });
 
       } catch (err) {
-        removeTypingIndicator(typingId);
-        appendMessage("assistant", `❌ **Network error:** ${err.message}`);
+        thinkingEl.remove();
+        appendModelResponse(`❌ **Connection error:** ${err.message}`, []);
       } finally {
-        sendBtn.disabled = false;
-        promptInput.focus();
+        isSubmitting = false;
+        chatScroll.scrollTop = chatScroll.scrollHeight;
       }
     }
 
-    function appendMessage(role, text) {
-      const row = document.createElement("div");
-      row.className = "message-row";
+    function appendUserMessage(text) {
+      const turn = document.createElement("div");
+      turn.className = "turn user-turn";
 
-      const bubble = document.createElement("div");
-      bubble.className = `message ${role === "user" ? "user-msg" : "assistant-msg"}`;
-      bubble.innerHTML = marked.parse(text);
+      const pill = document.createElement("div");
+      pill.className = "user-pill";
+      pill.textContent = text;
 
-      row.appendChild(bubble);
-      chatContainer.appendChild(row);
-      chatContainer.scrollTop = chatContainer.scrollHeight;
-      return bubble;
+      turn.appendChild(pill);
+      chatInner.appendChild(turn);
+      chatScroll.scrollTop = chatScroll.scrollHeight;
     }
 
-    function appendAssistantResponse(text, toolCalls = []) {
-      const row = document.createElement("div");
-      row.className = "message-row";
+    function appendThinkingIndicator() {
+      const turn = document.createElement("div");
+      turn.className = "turn model-turn";
 
-      const bubble = document.createElement("div");
-      bubble.className = "message assistant-msg";
-
-      // If tool calls were made, render interactive cards
-      if (toolCalls && toolCalls.length > 0) {
-        toolCalls.forEach((tool) => {
-          const toolEl = document.createElement("div");
-          toolEl.className = "tool-card";
-
-          const header = document.createElement("div");
-          header.className = "tool-header";
-          header.innerHTML = `<span>⚡ Tool Executed: <strong>${tool.name}</strong></span> <span>▼</span>`;
-
-          const body = document.createElement("div");
-          body.className = "tool-body";
-          body.innerHTML = `
-            <div style="margin-bottom:6px; color:#8b949e;">Inputs:</div>
-            <pre><code>${JSON.stringify(tool.args, null, 2)}</code></pre>
-            <div style="margin-top:8px; margin-bottom:6px; color:#8b949e;">Result:</div>
-            <pre><code>${JSON.stringify(tool.result, null, 2)}</code></pre>
-          `;
-
-          header.onclick = () => {
-            body.classList.toggle("open");
-          };
-
-          toolEl.appendChild(header);
-          toolEl.appendChild(body);
-          bubble.appendChild(toolEl);
-        });
-      }
-
-      const content = document.createElement("div");
-      content.innerHTML = marked.parse(text);
-      bubble.appendChild(content);
-
-      row.appendChild(bubble);
-      chatContainer.appendChild(row);
-      chatContainer.scrollTop = chatContainer.scrollHeight;
-    }
-
-    function appendTypingIndicator() {
-      const id = "typing-" + Date.now();
-      const row = document.createElement("div");
-      row.className = "message-row";
-      row.id = id;
-
-      const bubble = document.createElement("div");
-      bubble.className = "message assistant-msg";
-      bubble.innerHTML = `
-        <div class="typing-indicator">
-          <div class="dot"></div>
-          <div class="dot"></div>
-          <div class="dot"></div>
-          <span style="font-size:0.85rem; color:#8b949e; margin-left:6px;">Thinking & calling tools...</span>
+      turn.innerHTML = `
+        <div class="sparkle-avatar">
+          <svg viewBox="0 0 24 24" style="width:28px; height:28px;">
+            <path fill="url(#sparkle-gradient-anim)" d="M12 2L14.2 9.8L22 12L14.2 14.2L12 22L9.8 14.2L2 12L9.8 9.8L12 2Z"/>
+            <defs>
+              <linearGradient id="sparkle-gradient-anim" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#4285F4"/>
+                <stop offset="0.5" stop-color="#9B72CB"/>
+                <stop offset="1" stop-color="#D96570"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <div class="model-content">
+          <div class="thinking-box">
+            <div class="shimmer-line"></div>
+            <span>Thinking & calling tools...</span>
+          </div>
         </div>
       `;
 
-      row.appendChild(bubble);
-      chatContainer.appendChild(row);
-      chatContainer.scrollTop = chatContainer.scrollHeight;
-      return id;
+      chatInner.appendChild(turn);
+      chatScroll.scrollTop = chatScroll.scrollHeight;
+      return turn;
     }
 
-    function removeTypingIndicator(id) {
-      const el = document.getElementById(id);
-      if (el) el.remove();
+    function appendModelResponse(text, toolCalls = []) {
+      const turn = document.createElement("div");
+      turn.className = "turn model-turn";
+
+      const avatar = document.createElement("div");
+      avatar.className = "sparkle-avatar";
+      avatar.innerHTML = `
+        <svg viewBox="0 0 24 24" style="width:28px; height:28px;">
+          <path fill="url(#sparkle-gradient-model)" d="M12 2L14.2 9.8L22 12L14.2 14.2L12 22L9.8 14.2L2 12L9.8 9.8L12 2Z"/>
+          <defs>
+            <linearGradient id="sparkle-gradient-model" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#4285F4"/>
+              <stop offset="0.5" stop-color="#9B72CB"/>
+              <stop offset="1" stop-color="#D96570"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      `;
+
+      const content = document.createElement("div");
+      content.className = "model-content";
+
+      // If tool calls were made, render authentic Gemini collapsible accordions
+      if (toolCalls && toolCalls.length > 0) {
+        toolCalls.forEach((tool) => {
+          const acc = document.createElement("div");
+          acc.className = "tool-accordion";
+
+          const summary = document.createElement("div");
+          summary.className = "tool-accordion-summary";
+          summary.innerHTML = `
+            <div class="tool-left">
+              <svg class="icon" style="width:16px; height:16px; color:#4487f4;" viewBox="0 0 24 24"><path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z"/></svg>
+              <span>Tool: <strong class="tool-badge">${tool.name}</strong></span>
+            </div>
+            <span>▾</span>
+          `;
+
+          const body = document.createElement("div");
+          body.className = "tool-accordion-body";
+          body.innerHTML = `
+            <div class="tool-section-label">Arguments:</div>
+            <pre><code>${JSON.stringify(tool.args, null, 2)}</code></pre>
+            <div class="tool-section-label" style="margin-top:10px;">Result:</div>
+            <pre><code>${JSON.stringify(tool.result, null, 2)}</code></pre>
+          `;
+
+          summary.onclick = () => {
+            body.classList.toggle("open");
+          };
+
+          acc.appendChild(summary);
+          acc.appendChild(body);
+          content.appendChild(acc);
+        });
+      }
+
+      const textBody = document.createElement("div");
+      textBody.innerHTML = marked.parse(text);
+      content.appendChild(textBody);
+
+      turn.appendChild(avatar);
+      turn.appendChild(content);
+      chatInner.appendChild(turn);
+      chatScroll.scrollTop = chatScroll.scrollHeight;
     }
   </script>
 </body>
