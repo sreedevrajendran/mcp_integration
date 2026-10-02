@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "antigravity-github-bridge": {
+      "command": "node",
+      "args": [
+        "/home/sreedevrajendran/Documents/Projects/mcp_antigravity_with_github_on_gemini/dist/index.js"
+      ],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "YOUR_GITHUB_TOKEN_HERE",
+        "ANTIGRAVITY_PROJECTS_DIR": "/home/sreedevrajendran/Documents/Projects"
+      }
+    }
+  }
+}
