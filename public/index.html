@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Gemini Agent • Antigravity & GitHub</title>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --card-bg: #161b22;
+      --border: #30363d;
+      --accent: #58a6ff;
+      --accent-hover: #1f6feb;
+      --text: #c9d1d9;
+      --text-muted: #8b949e;
+      --user-bubble: #1f6feb;
+      --tool-bg: #21262d;
+      --tool-border: #388bfd33;
+      --success: #3fb950;
+      --warning: #d29922;
+      --danger: #f85149;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      height: 100dvh;
+      overflow: hidden;
+    }
+    /* Header */
+    header {
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 600;
+      font-size: 1.05rem;
+      color: #fff;
+    }
+    .brand-icon {
+      font-size: 1.4rem;
+    }
+    .status-badges {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .badge {
+      font-size: 0.75rem;
+      padding: 4px 8px;
+      border-radius: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: #21262d;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+    .badge.active {
+      color: var(--success);
+      border-color: rgba(63, 185, 80, 0.4);
+    }
+    .badge.inactive {
+      color: var(--warning);
+      border-color: rgba(210, 153, 34, 0.4);
+      cursor: pointer;
+    }
+    .settings-btn {
+      background: #21262d;
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .settings-btn:hover {
+      background: #30363d;
+    }
+
+    /* Main Chat Container */
+    #chat-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      scroll-behavior: smooth;
+    }
+    .message-row {
+      display: flex;
+      flex-direction: column;
+      max-width: 850px;
+      width: 100%;
+      margin: 0 auto;
+    }
+    .message {
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      line-height: 1.55;
+      word-break: break-word;
+    }
+    .user-msg {
+      align-self: flex-end;
+      background: var(--user-bubble);
+      color: #fff;
+      border-bottom-right-radius: 2px;
+      max-width: 85%;
+    }
+    .assistant-msg {
+      align-self: flex-start;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-bottom-left-radius: 2px;
+      width: 100%;
+    }
+    .assistant-msg pre {
+      background: #0d1117;
+      padding: 10px;
+      border-radius: 6px;
+      overflow-x: auto;
+      margin: 8px 0;
+      border: 1px solid var(--border);
+      font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, monospace;
+      font-size: 0.85rem;
+    }
+    .assistant-msg code {
+      background: #21262d;
+      padding: 2px 5px;
+      border-radius: 4px;
+      font-size: 0.88rem;
+    }
+    .assistant-msg pre code {
+      background: transparent;
+      padding: 0;
+    }
+    .assistant-msg ul, .assistant-msg ol {
+      padding-left: 20px;
+      margin: 8px 0;
+    }
+    .assistant-msg table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 10px 0;
+    }
+    .assistant-msg th, .assistant-msg td {
+      border: 1px solid var(--border);
+      padding: 6px 10px;
+      font-size: 0.88rem;
+    }
+    .assistant-msg th {
+      background: #21262d;
+    }
+
+    /* Tool Call Cards */
+    .tool-card {
+      background: var(--tool-bg);
+      border: 1px solid var(--tool-border);
+      border-radius: 6px;
+      margin: 8px 0;
+      overflow: hidden;
+      font-size: 0.85rem;
+    }
+    .tool-header {
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      user-select: none;
+      background: rgba(88, 166, 255, 0.08);
+      color: var(--accent);
+      font-weight: 500;
+    }
+    .tool-header:hover {
+      background: rgba(88, 166, 255, 0.15);
+    }
+    .tool-body {
+      padding: 10px;
+      border-top: 1px solid var(--border);
+      display: none;
+      background: #111418;
+    }
+    .tool-body.open {
+      display: block;
+    }
+
+    /* Suggestion Chips */
+    .suggestions {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 8px 16px;
+      max-width: 850px;
+      margin: 0 auto;
+      width: 100%;
+      scrollbar-width: none;
+    }
+    .suggestions::-webkit-scrollbar {
+      display: none;
+    }
+    .chip {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 6px 12px;
+      border-radius: 16px;
+      font-size: 0.82rem;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .chip:hover {
+      background: #21262d;
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+
+    /* Input Footer */
+    footer {
+      background: var(--card-bg);
+      border-top: 1px solid var(--border);
+      padding: 12px 16px;
+      flex-shrink: 0;
+    }
+    .input-form {
+      display: flex;
+      gap: 10px;
+      max-width: 850px;
+      margin: 0 auto;
+      position: relative;
+    }
+    #prompt-input {
+      flex: 1;
+      background: #0d1117;
+      border: 1px solid var(--border);
+      color: #fff;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      outline: none;
+      resize: none;
+      height: 48px;
+      max-height: 120px;
+    }
+    #prompt-input:focus {
+      border-color: var(--accent);
+    }
+    .send-btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      width: 48px;
+      height: 48px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      transition: background 0.15s ease;
+      flex-shrink: 0;
+    }
+    .send-btn:hover {
+      background: var(--accent-hover);
+    }
+    .send-btn:disabled {
+      background: #21262d;
+      color: var(--text-muted);
+      cursor: not-allowed;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.75);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 16px;
+    }
+    .modal-overlay.open {
+      display: flex;
+    }
+    .modal {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      max-width: 500px;
+      width: 100%;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .modal h3 {
+      color: #fff;
+      font-size: 1.15rem;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .form-group label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    .form-group input {
+      background: #0d1117;
+      border: 1px solid var(--border);
+      color: #fff;
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      outline: none;
+    }
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+    .btn-secondary {
+      background: #21262d;
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .btn-primary {
+      background: var(--accent);
+      border: none;
+      color: #fff;
+      padding: 8px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    /* Loading Spinner */
+    .typing-indicator {
+      display: inline-flex;
+      gap: 4px;
+      align-items: center;
+      padding: 8px 12px;
+    }
+    .dot {
+      width: 6px;
+      height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: bounce 1.4s infinite ease-in-out both;
+    }
+    .dot:nth-child(1) { animation-delay: -0.32s; }
+    .dot:nth-child(2) { animation-delay: -0.16s; }
+    @keyframes bounce {
+      0%, 80%, 100% { transform: scale(0); }
+      40% { transform: scale(1); }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <span class="brand-icon">⚡</span>
+      <span>Gemini Agent</span>
+    </div>
+    <div class="status-badges">
+      <span id="gemini-status" class="badge inactive" onclick="openSettingsModal()">● Gemini Key</span>
+      <span id="github-status" class="badge active">● GitHub Active</span>
+      <button class="settings-btn" onclick="openSettingsModal()">⚙️ Settings</button>
+    </div>
+  </header>
+
+  <div id="chat-container">
+    <div class="message-row">
+      <div class="message assistant-msg">
+        👋 **Welcome! I am your Gemini AI Agent.**
+        <br><br>
+        I have direct access to your local Antigravity project workspaces and your GitHub account:
+        <ul>
+          <li>📁 **Local Projects:** Inspect directory trees, read/write files, analyze configs, check TODOs & git status.</li>
+          <li>🐙 **GitHub:** Create repos, update settings, manage issues, open PRs, create branches, and commit files.</li>
+        </ul>
+        Ask me anything below or pick a prompt to start!
+      </div>
+    </div>
+  </div>
+
+  <div class="suggestions">
+    <button class="chip" onclick="sendSuggestion('List all my local projects and tell me what frameworks they use.')">📁 List Local Projects</button>
+    <button class="chip" onclick="sendSuggestion('Show me my top 5 most recently updated repositories on GitHub.')">🐙 My GitHub Repos</button>
+    <button class="chip" onclick="sendSuggestion('Inspect local project AI_EXPENSE_TRACKER: show me its file tree and git status.')">📊 Inspect AI_EXPENSE_TRACKER</button>
+    <button class="chip" onclick="sendSuggestion('Create a new private GitHub repository named my-test-project.')">🚀 Create GitHub Repo</button>
+  </div>
+
+  <footer>
+    <form class="input-form" onsubmit="handleSubmit(event)">
+      <textarea
+        id="prompt-input"
+        placeholder="Ask Gemini to inspect a local project, create a repo, manage issues..."
+        rows="1"
+        onkeydown="handleKeyDown(event)"
+      ></textarea>
+      <button type="submit" id="send-btn" class="send-btn">➔</button>
+    </form>
+  </footer>
+
+  <!-- Settings Modal -->
+  <div id="settings-modal" class="modal-overlay">
+    <div class="modal">
+      <h3>⚙️ Agent Settings</h3>
+      <p style="font-size:0.85rem; color:var(--text-muted);">
+        Enter your Google Gemini API key to enable autonomous AI agent execution. (Free from <a href="https://aistudio.google.com/apikey" target="_blank" style="color:var(--accent);">Google AI Studio</a>).
+      </p>
+
+      <div class="form-group">
+        <label for="gemini-key-input">Gemini API Key (AI Studio)</label>
+        <input type="password" id="gemini-key-input" placeholder="AIzaSy...">
+      </div>
+
+      <div class="form-group">
+        <label for="github-token-input">GitHub Personal Access Token (Optional override)</label>
+        <input type="password" id="github-token-input" placeholder="github_pat_...">
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeSettingsModal()">Cancel</button>
+        <button class="btn-primary" onclick="saveSettings()">Save & Connect</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const chatContainer = document.getElementById("chat-container");
+    const promptInput = document.getElementById("prompt-input");
+    const sendBtn = document.getElementById("send-btn");
+    const settingsModal = document.getElementById("settings-modal");
+    const geminiStatusBadge = document.getElementById("gemini-status");
+    const githubStatusBadge = document.getElementById("github-status");
+
+    let conversationHistory = [];
+
+    // Check system status on page load
+    async function checkStatus() {
+      try {
+        const res = await fetch("/api/status");
+        const data = await res.json();
+
+        if (data.hasGeminiKey) {
+          geminiStatusBadge.textContent = "● Gemini Ready";
+          geminiStatusBadge.className = "badge active";
+        } else {
+          geminiStatusBadge.textContent = "● Set Gemini Key";
+          geminiStatusBadge.className = "badge inactive";
+        }
+
+        if (data.hasGitHubToken) {
+          githubStatusBadge.textContent = "● GitHub Active";
+          githubStatusBadge.className = "badge active";
+        } else {
+          githubStatusBadge.textContent = "● Set GitHub Token";
+          githubStatusBadge.className = "badge inactive";
+        }
+      } catch (e) {
+        console.error("Status check failed", e);
+      }
+    }
+
+    checkStatus();
+
+    function openSettingsModal() {
+      settingsModal.classList.add("open");
+    }
+
+    function closeSettingsModal() {
+      settingsModal.classList.remove("open");
+    }
+
+    async function saveSettings() {
+      const geminiApiKey = document.getElementById("gemini-key-input").value.trim();
+      const githubToken = document.getElementById("github-token-input").value.trim();
+
+      const payload = {};
+      if (geminiApiKey) payload.geminiApiKey = geminiApiKey;
+      if (githubToken) payload.githubToken = githubToken;
+
+      try {
+        const res = await fetch("/api/settings", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (data.success) {
+          closeSettingsModal();
+          checkStatus();
+        } else {
+          alert("Error saving settings: " + (data.error || "Unknown"));
+        }
+      } catch (err) {
+        alert("Failed to save settings: " + err.message);
+      }
+    }
+
+    function handleKeyDown(e) {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        handleSubmit(e);
+      }
+    }
+
+    function sendSuggestion(text) {
+      promptInput.value = text;
+      handleSubmit(new Event("submit"));
+    }
+
+    async function handleSubmit(e) {
+      e.preventDefault();
+      const text = promptInput.value.trim();
+      if (!text) return;
+
+      promptInput.value = "";
+      sendBtn.disabled = true;
+
+      // Add user message
+      appendMessage("user", text);
+
+      // Add typing indicator
+      const typingId = appendTypingIndicator();
+
+      try {
+        const res = await fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            message: text,
+            history: conversationHistory,
+          }),
+        });
+
+        const data = await res.json();
+        removeTypingIndicator(typingId);
+
+        if (data.error === "MISSING_GEMINI_API_KEY") {
+          appendMessage("assistant", "⚠️ **Gemini API Key Required**\nPlease click **Settings** (or the red badge at top right) and enter your free Gemini API Key from [Google AI Studio](https://aistudio.google.com/apikey).");
+          openSettingsModal();
+          return;
+        }
+
+        if (!data.success) {
+          appendMessage("assistant", `❌ **Error:** ${data.error || "Failed to process request."}`);
+          return;
+        }
+
+        // Render tool calls if any were made
+        appendAssistantResponse(data.text, data.toolCalls);
+
+        // Update history
+        conversationHistory.push({ role: "user", parts: [{ text }] });
+        conversationHistory.push({ role: "model", parts: [{ text: data.text }] });
+
+      } catch (err) {
+        removeTypingIndicator(typingId);
+        appendMessage("assistant", `❌ **Network error:** ${err.message}`);
+      } finally {
+        sendBtn.disabled = false;
+        promptInput.focus();
+      }
+    }
+
+    function appendMessage(role, text) {
+      const row = document.createElement("div");
+      row.className = "message-row";
+
+      const bubble = document.createElement("div");
+      bubble.className = `message ${role === "user" ? "user-msg" : "assistant-msg"}`;
+      bubble.innerHTML = marked.parse(text);
+
+      row.appendChild(bubble);
+      chatContainer.appendChild(row);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+      return bubble;
+    }
+
+    function appendAssistantResponse(text, toolCalls = []) {
+      const row = document.createElement("div");
+      row.className = "message-row";
+
+      const bubble = document.createElement("div");
+      bubble.className = "message assistant-msg";
+
+      // If tool calls were made, render interactive cards
+      if (toolCalls && toolCalls.length > 0) {
+        toolCalls.forEach((tool) => {
+          const toolEl = document.createElement("div");
+          toolEl.className = "tool-card";
+
+          const header = document.createElement("div");
+          header.className = "tool-header";
+          header.innerHTML = `<span>⚡ Tool Executed: <strong>${tool.name}</strong></span> <span>▼</span>`;
+
+          const body = document.createElement("div");
+          body.className = "tool-body";
+          body.innerHTML = `
+            <div style="margin-bottom:6px; color:#8b949e;">Inputs:</div>
+            <pre><code>${JSON.stringify(tool.args, null, 2)}</code></pre>
+            <div style="margin-top:8px; margin-bottom:6px; color:#8b949e;">Result:</div>
+            <pre><code>${JSON.stringify(tool.result, null, 2)}</code></pre>
+          `;
+
+          header.onclick = () => {
+            body.classList.toggle("open");
+          };
+
+          toolEl.appendChild(header);
+          toolEl.appendChild(body);
+          bubble.appendChild(toolEl);
+        });
+      }
+
+      const content = document.createElement("div");
+      content.innerHTML = marked.parse(text);
+      bubble.appendChild(content);
+
+      row.appendChild(bubble);
+      chatContainer.appendChild(row);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    function appendTypingIndicator() {
+      const id = "typing-" + Date.now();
+      const row = document.createElement("div");
+      row.className = "message-row";
+      row.id = id;
+
+      const bubble = document.createElement("div");
+      bubble.className = "message assistant-msg";
+      bubble.innerHTML = `
+        <div class="typing-indicator">
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <span style="font-size:0.85rem; color:#8b949e; margin-left:6px;">Thinking & calling tools...</span>
+        </div>
+      `;
+
+      row.appendChild(bubble);
+      chatContainer.appendChild(row);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+      return id;
+    }
+
+    function removeTypingIndicator(id) {
+      const el = document.getElementById(id);
+      if (el) el.remove();
+    }
+  </script>
+</body>
+</html>
