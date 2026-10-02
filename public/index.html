@@ -250,37 +250,9 @@
       gap: 8px;
     }
 
-    .compact-status {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 0.76rem;
-      padding: 4px 10px;
-      border-radius: 14px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      color: var(--text-muted);
-      cursor: pointer;
-    }
-
-    .status-indicator {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-    }
-
-    .dot.active { background: var(--success); box-shadow: 0 0 5px var(--success); }
-    .dot.warn { background: var(--warning); }
-
     .user-avatar-btn {
-      width: 32px;
-      height: 32px;
+      width: 34px;
+      height: 34px;
       border-radius: 50%;
       background: linear-gradient(135deg, #7c4dff, #4487f4);
       color: #fff;
@@ -288,9 +260,14 @@
       align-items: center;
       justify-content: center;
       font-weight: 600;
-      font-size: 0.85rem;
+      font-size: 0.88rem;
       cursor: pointer;
       border: none;
+      transition: transform 0.15s;
+    }
+
+    .user-avatar-btn:hover {
+      transform: scale(1.05);
     }
 
     /* Chat Scroll Area */
@@ -659,21 +636,48 @@
     .gemini-modal {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 18px;
-      max-width: 440px;
+      border-radius: 20px;
+      max-width: 480px;
       width: 100%;
-      padding: 20px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      padding: 22px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 4px;
     }
 
     .modal-title {
       font-size: 1.15rem;
       font-weight: 500;
       color: #fff;
-      margin-bottom: 6px;
       display: flex;
       align-items: center;
       gap: 8px;
+    }
+
+    .modal-close-icon {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .modal-close-icon:hover {
+      background: var(--surface-variant);
+      color: #fff;
     }
 
     .modal-desc {
@@ -683,26 +687,96 @@
       margin-bottom: 16px;
     }
 
+    .integration-section-title {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .integration-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .integration-card {
+      background: var(--surface-variant);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .integration-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .integration-name {
+      font-size: 0.92rem;
+      font-weight: 500;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .integration-desc {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.74rem;
+      padding: 3px 8px;
+      border-radius: 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text-subtle);
+      font-weight: 400;
+    }
+
+    .status-badge .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+
+    .status-badge .dot.active { background: var(--success); box-shadow: 0 0 5px var(--success); }
+    .status-badge .dot.warn { background: var(--warning); }
+
     .modal-field {
-      margin-bottom: 14px;
+      margin-top: 4px;
     }
 
     .modal-field label {
       display: block;
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       color: var(--text-muted);
-      margin-bottom: 5px;
+      margin-bottom: 4px;
     }
 
     .modal-field input {
       width: 100%;
-      background: var(--surface-variant);
+      background: #141517;
       border: 1px solid var(--border);
       color: #fff;
-      padding: 10px 12px;
-      border-radius: 10px;
-      font-size: 0.9rem;
+      padding: 9px 12px;
+      border-radius: 8px;
+      font-size: 0.88rem;
       outline: none;
+      font-family: 'Roboto Mono', monospace;
     }
 
     .modal-field input:focus {
@@ -853,18 +927,7 @@
       </div>
 
       <div class="nav-right">
-        <div class="compact-status" onclick="openSettingsModal()" title="Status & Settings">
-          <div class="status-indicator">
-            <span class="dot active" id="gemini-dot"></span>
-            <span>Gemini</span>
-          </div>
-          <span style="color:var(--border-focus);">|</span>
-          <div class="status-indicator">
-            <span class="dot active" id="github-dot"></span>
-            <span>GitHub</span>
-          </div>
-        </div>
-        <button class="user-avatar-btn" onclick="openSettingsModal()" title="Account & Settings">S</button>
+        <button class="user-avatar-btn" onclick="openSettingsModal()" title="Settings & Integrations">S</button>
       </div>
     </header>
 
@@ -944,32 +1007,74 @@
     </div>
   </main>
 
-  <!-- Minimal Settings Modal -->
+  <!-- Minimal Settings Modal with Integrations -->
   <div id="settings-modal" class="modal-overlay">
     <div class="gemini-modal">
-      <div class="modal-title">
-        <svg style="width:22px; height:22px;" viewBox="0 0 24 24">
-          <path fill="url(#sparkle-gradient-modal)" d="M12 2L14.2 9.8L22 12L14.2 14.2L12 22L9.8 14.2L2 12L9.8 9.8L12 2Z"/>
-          <defs>
-            <linearGradient id="sparkle-gradient-modal" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
-              <stop stop-color="#4285F4"/>
-              <stop offset="0.5" stop-color="#9B72CB"/>
-              <stop offset="1" stop-color="#D96570"/>
-            </linearGradient>
-          </defs>
-        </svg>
-        <span>Gemini Settings</span>
+      <div class="modal-header">
+        <div class="modal-title">
+          <svg style="width:20px; height:20px;" viewBox="0 0 24 24">
+            <path fill="url(#sparkle-gradient-modal)" d="M12 2L14.2 9.8L22 12L14.2 14.2L12 22L9.8 14.2L2 12L9.8 9.8L12 2Z"/>
+            <defs>
+              <linearGradient id="sparkle-gradient-modal" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#4285F4"/>
+                <stop offset="0.5" stop-color="#9B72CB"/>
+                <stop offset="1" stop-color="#D96570"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <span>Settings</span>
+        </div>
+        <button class="modal-close-icon" onclick="closeSettingsModal()" title="Close">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
       </div>
-      <p class="modal-desc">Configure your keys for autonomous local project tools & GitHub actions.</p>
 
-      <div class="modal-field">
-        <label>Google Gemini API Key</label>
-        <input type="password" id="gemini-api-input" placeholder="AIzaSy... or AQ....">
-      </div>
+      <div class="integration-section-title">Integrations & Status</div>
 
-      <div class="modal-field">
-        <label>GitHub Personal Access Token</label>
-        <input type="password" id="github-token-input" placeholder="github_pat_...">
+      <div class="integration-list">
+        <!-- Gemini AI Integration Card -->
+        <div class="integration-card">
+          <div class="integration-top">
+            <span class="integration-name">Google Gemini AI</span>
+            <span class="status-badge" id="modal-gemini-status">
+              <span class="dot active" id="modal-gemini-dot"></span>
+              <span id="modal-gemini-text">Active</span>
+            </span>
+          </div>
+          <div class="integration-desc">Powers model reasoning, chat intelligence, and function calls.</div>
+          <div class="modal-field">
+            <label>API Key</label>
+            <input type="password" id="gemini-api-input" placeholder="AIzaSy... or AQ....">
+          </div>
+        </div>
+
+        <!-- GitHub Integration Card -->
+        <div class="integration-card">
+          <div class="integration-top">
+            <span class="integration-name">GitHub Bridge</span>
+            <span class="status-badge" id="modal-github-status">
+              <span class="dot active" id="modal-github-dot"></span>
+              <span id="modal-github-text">Connected</span>
+            </span>
+          </div>
+          <div class="integration-desc">Provides repo creation, issues, PRs, branch management, and commits.</div>
+          <div class="modal-field">
+            <label>Personal Access Token</label>
+            <input type="password" id="github-token-input" placeholder="github_pat_...">
+          </div>
+        </div>
+
+        <!-- Local Antigravity Workspace Card -->
+        <div class="integration-card">
+          <div class="integration-top">
+            <span class="integration-name">Local Antigravity Workspace</span>
+            <span class="status-badge">
+              <span class="dot active"></span>
+              <span>Active (21 Projects)</span>
+            </span>
+          </div>
+          <div class="integration-desc">Direct filesystem and git inspector at <code>~/Documents/Projects</code>.</div>
+        </div>
       </div>
 
       <div class="modal-footer">
@@ -988,8 +1093,10 @@
     const sidebar = document.getElementById("sidebar");
     const sidebarOverlay = document.getElementById("sidebar-overlay");
     const settingsModal = document.getElementById("settings-modal");
-    const geminiDot = document.getElementById("gemini-dot");
-    const githubDot = document.getElementById("github-dot");
+    const modalGeminiDot = document.getElementById("modal-gemini-dot");
+    const modalGeminiText = document.getElementById("modal-gemini-text");
+    const modalGithubDot = document.getElementById("modal-github-dot");
+    const modalGithubText = document.getElementById("modal-github-text");
 
     let history = [];
     let isSubmitting = false;
@@ -1000,14 +1107,18 @@
         const res = await fetch("/api/status");
         const data = await res.json();
         if (data.hasGeminiKey) {
-          geminiDot.className = "dot active";
+          modalGeminiDot.className = "dot active";
+          modalGeminiText.textContent = "Active";
         } else {
-          geminiDot.className = "dot warn";
+          modalGeminiDot.className = "dot warn";
+          modalGeminiText.textContent = "Key Needed";
         }
         if (data.hasGitHubToken) {
-          githubDot.className = "dot active";
+          modalGithubDot.className = "dot active";
+          modalGithubText.textContent = "Connected";
         } else {
-          githubDot.className = "dot warn";
+          modalGithubDot.className = "dot warn";
+          modalGithubText.textContent = "Token Needed";
         }
       } catch (err) {
         console.error("Status error", err);
