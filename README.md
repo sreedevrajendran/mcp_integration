@@ -89,10 +89,36 @@ ANTIGRAVITY_PROJECTS_DIR=/home/sreedevrajendran/Documents/Projects
 
 ---
 
-## Registering with Gemini
+## Registering with Claude & Gemini
 
-Add this server to your Gemini MCP configuration file (e.g. `gemini_mcp_config.json` or within your Gemini client settings):
+### 1. Claude Desktop (Linux)
+Location: `~/.config/Claude/claude_desktop_config.json`
+```json
+{
+  "mcpServers": {
+    "antigravity-github-bridge": {
+      "command": "/home/sreedevrajendran/.nvm/versions/node/v24.14.1/bin/node",
+      "args": [
+        "/home/sreedevrajendran/Documents/Projects/mcp_antigravity_with_github_on_gemini/dist/index.js"
+      ],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "ghp_yourActualTokenHere",
+        "ANTIGRAVITY_PROJECTS_DIR": "/home/sreedevrajendran/Documents/Projects"
+      }
+    }
+  }
+}
+```
 
+### 2. Claude Code CLI
+Location: `~/.claude.json`
+Add under `"mcpServers"` or run:
+```bash
+claude mcp add antigravity-github-bridge /home/sreedevrajendran/.nvm/versions/node/v24.14.1/bin/node /home/sreedevrajendran/Documents/Projects/mcp_antigravity_with_github_on_gemini/dist/index.js
+```
+
+### 3. Gemini / Antigravity
+Location: `~/.gemini/config/mcp_config.json`
 ```json
 {
   "mcpServers": {
