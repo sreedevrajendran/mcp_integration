@@ -290,7 +290,7 @@ export async function runGeminiAgent(params: {
   history?: Array<{ role: "user" | "model"; parts: any[] }>;
   model?: string;
 }): Promise<AgentResponse> {
-  const { apiKey, message, history = [], model = "gemini-3.8-flash" } = params;
+  const { apiKey, message, history = [], model = "gemini-3.5-flash-lite" } = params;
 
   const ai = new GoogleGenAI({ apiKey });
   const toolLogs: ToolLog[] = [];
@@ -307,16 +307,24 @@ You have direct access to tools for inspecting local Antigravity project workspa
 When a user asks about local projects or GitHub tasks, proactively call the appropriate tools.
 Summarize your actions clearly and format responses with clean markdown.`;
 
-  const modelsToTry = [model, "gemini-3.5-flash-lite", "gemini-2.5-flash"].filter(
-    (m, idx, self) => self.indexOf(m) === idx
-  );
+  // Default to ultra-fast gemini-3.5-flash-lite (1-2s response time)
+  const modelsToTry = [
+    model && model !== "gemini-3.8-flash" ? model : "gemini-3.5-flash-lite",
+    "gemini-2.5-flash",
+    "gemini-3.8-flash",
+  ].filter((m, idx, self) => self.indexOf(m) === idx);
+
+  let preferredModel = modelsToTry[0];
 
   // Autonomous tool loop (up to 8 turns)
   for (let turn = 0; turn < 8; turn++) {
     let response: any = null;
     let lastError: any = null;
 
-    for (const targetModel of modelsToTry) {
+    // Try preferred model first, then others
+    const orderedModels = [preferredModel, ...modelsToTry.filter((m) => m !== preferredModel)];
+
+    for (const targetModel of orderedModels) {
       try {
         response = await ai.models.generateContent({
           model: targetModel,
@@ -326,12 +334,18 @@ Summarize your actions clearly and format responses with clean markdown.`;
             tools: [{ functionDeclarations: GEMINI_TOOL_DECLARATIONS }],
           },
         });
+        preferredModel = targetModel; // Stick with working model for subsequent turns
         break; // Succeeded!
       } catch (err: any) {
         lastError = err;
         const errMsg = String(err.message || "");
-        if (errMsg.includes("503") || errMsg.includes("high demand") || errMsg.includes("UNAVAILABLE")) {
-          console.warn(`Model ${targetModel} busy (503), trying next model...`);
+        if (
+          errMsg.includes("503") ||
+          errMsg.includes("high demand") ||
+          errMsg.includes("UNAVAILABLE") ||
+          err.status === 503
+        ) {
+          console.warn(`Model ${targetModel} busy (503), immediately switching to next model...`);
           continue;
         }
         throw err;

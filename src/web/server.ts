@@ -90,7 +90,7 @@ app.post("/api/settings", (req, res) => {
  */
 app.post("/api/chat", async (req, res) => {
   try {
-    const { message, history = [], apiKey: clientApiKey, model = "gemini-3.8-flash" } = req.body;
+    const { message, history = [], apiKey: clientApiKey, model = "gemini-3.5-flash-lite" } = req.body;
 
     const apiKey = clientApiKey || process.env.GEMINI_API_KEY;
     if (!apiKey || apiKey.trim() === "") {
