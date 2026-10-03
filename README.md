@@ -1,8 +1,8 @@
 # Antigravity & GitHub Bridge MCP Server for Claude
 
-A Model Context Protocol (MCP) server written in TypeScript/Node.js that seamlessly bridges **Gemini**, **local Antigravity project workspaces**, and **GitHub**.
+A Model Context Protocol (MCP) server written in TypeScript/Node.js that seamlessly bridges **Claude**, **local Antigravity project workspaces**, and **GitHub**.
 
-It allows Gemini to discover and inspect local projects, analyze file structures, detect stacks, view git status, read/write project files, and perform full repository management on GitHub (create repos, edit settings, manage issues, open PRs, create branches, and commit files).
+It allows Claude to discover and inspect local projects, analyze file structures, detect stacks, view git status, read/write project files, and perform full repository management on GitHub (create repos, edit settings, manage issues, open PRs, create branches, and commit files).
 
 ---
 
